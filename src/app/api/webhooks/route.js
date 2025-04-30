@@ -1,7 +1,7 @@
 import { headers } from "next/headers";
 import { Webhook } from "svix";
 
-export async function Postpone(req) {
+export async function POST(req) {
   const SIGNING_SECRET = process.env.SIGNING_SECRET;
 
   if (!SIGNING_SECRET) {
@@ -52,38 +52,16 @@ export async function Postpone(req) {
   const eventType = evt?.type;
 
   if (evt.type === "user.created") {
-    console.log(`user.created`);
+    console.log("user.created");
   }
 
   if (evt.type === "user.updated") {
-    console.log(`user.updated`);
+    console.log("user.updated");
   }
 
   if (evt.type === "user.deleted") {
-    console.log(`user.deleted`);
+    console.log("user.deleted");
   }
 
-  return new Response(" Webhook received", { status: 200 });
+  return new Response("Webhook received", { status: 200 });
 }
-
-// import { verifyWebhook } from "@clerk/nextjs/webhooks";
-
-// export async function POST(req) {
-//   try {
-//     const evt = await verifyWebhook(req);
-
-//     // Do something with payload
-//     // For this guide, log payload to console
-//     const { id } = evt.data;
-//     const eventType = evt.type;
-//     console.log(
-//       `Received webhook with ID ${id} and event type of ${eventType}`
-//     );
-//     console.log("Webhook payload:", evt.data);
-
-//     return new Response("Webhook received", { status: 200 });
-//   } catch (err) {
-//     console.error("Error verifying webhook:", err);
-//     return new Response("Error verifying webhook", { status: 400 });
-//   }
-// }

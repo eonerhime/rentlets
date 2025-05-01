@@ -1,4 +1,4 @@
-import NotFoundContent from "@/app/_not-found/NotFoundContent";
+import NotFoundContent from "@/app/not-found/NotFoundContent";
 
 import { Suspense } from "react";
 

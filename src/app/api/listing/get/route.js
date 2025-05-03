@@ -1,10 +1,11 @@
-import Listing from "@/lib/models/listing-model";
-import { connect } from "@/lib/mongodb/mongoose";
+import Listing from "@/lib/models/listing.model.js";
+import { connect } from "@/lib/mongodb/mongoose.js";
 
 export const POST = async (req) => {
   await connect();
-
   const data = await req.json();
+
+  console.log("DATA:", data.searchTerm);
 
   try {
     const startIndex = parseInt(data.startIndex) || 0;
@@ -31,37 +32,27 @@ export const POST = async (req) => {
       type = { $in: ["sale", "rent"] };
     }
 
-    const searchConditions = [];
-
-    if (data.searchTerm) {
-      const term = data.searchTerm;
-      searchConditions.push(
-        { name: { $regex: term, $options: "i" } },
-        { description: { $regex: term, $options: "i" } },
-        { address: { $regex: term, $options: "i" } },
-        { type: { $regex: term, $options: "i" } }
-      );
-    }
-
-    if (data.offer === "true") searchConditions.push({ offer: true });
-    if (data.furnished === "true") searchConditions.push({ furnished: true });
-    if (data.parking === "true") searchConditions.push({ parking: true });
-    if (data.type && data.type !== "all")
-      searchConditions.push({ type: data.type });
-    if (data.userId) searchConditions.push({ userId: data.userId });
-
-    const query = searchConditions.length > 0 ? { $or: searchConditions } : {}; // fallback to return all if nothing
-
-    const listings = await Listing.find(query)
+    const listings = await Listing.find({
+      ...(data.userId && { userId: data.userId }),
+      ...(data.listingId && { _id: data.listingId }),
+      ...(data.searchTerm && {
+        $or: [
+          { name: { $regex: data.searchTerm, $options: "i" } },
+          { description: { $regex: data.searchTerm, $options: "i" } },
+        ],
+      }),
+      offer,
+      furnished,
+      parking,
+      type,
+    })
       .sort({ updatedAt: sortDirection })
       .skip(startIndex)
       .limit(limit);
-
     return new Response(JSON.stringify(listings), {
       status: 200,
     });
   } catch (error) {
-    console.log("Error getting listings:", error);
-    return new Response("Server Error", { status: 500 });
+    console.log("Error getting posts:", error);
   }
 };

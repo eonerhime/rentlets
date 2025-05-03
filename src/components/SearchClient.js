@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import ListingItem from "@/ListingItem";
+import ListingItem from "@/components/ListingItem";
 import { useRouter, useSearchParams } from "next/navigation";
 
 export default function SearchClient() {

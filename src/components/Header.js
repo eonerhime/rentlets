@@ -15,6 +15,7 @@ export default function Header() {
   useEffect(() => {
     const urlParams = new URLSearchParams(searchParams);
     const searchTermFromUrl = urlParams.get("searchTerm");
+
     if (searchTermFromUrl) {
       setSearchTerm(searchTermFromUrl);
     }
@@ -22,8 +23,10 @@ export default function Header() {
 
   const handleSubmit = (e) => {
     e.preventDefault();
+
     const urlParams = new URLSearchParams(searchParams);
     urlParams.set("searchTerm", searchTerm);
+
     const searchQuery = urlParams.toString();
     router.push(`/search?${searchQuery}`);
   };

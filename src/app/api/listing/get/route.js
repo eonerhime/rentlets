@@ -6,6 +6,7 @@ export const POST = async (req) => {
   await connect();
 
   const data = await req.json();
+  console.log("DATA ID:", data);
 
   try {
     const startIndex = parseInt(data.startIndex) || 0;

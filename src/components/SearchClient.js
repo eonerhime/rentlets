@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import ListingItem from "../../components/ListingItem";
+import ListingItem from "@/ListingItem";
 import { useRouter, useSearchParams } from "next/navigation";
 
 export default function SearchClient() {
@@ -116,7 +116,7 @@ export default function SearchClient() {
       setSidebardata({ ...sidebardata, sort, order });
     }
   };
-  
+
   const handleSubmit = (e) => {
     e.preventDefault();
     const urlParams = new URLSearchParams();

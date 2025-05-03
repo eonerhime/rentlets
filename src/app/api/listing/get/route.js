@@ -1,13 +1,10 @@
 import Listing from "@/lib/models/listing-model";
 import { connect } from "@/lib/mongodb/mongoose";
-import mongoose from "mongoose";
 
 export const POST = async (req) => {
   await connect();
 
   const data = await req.json();
-  console.log("DATA:", data);
-  console.log("Search Term:", data.searchTerm);
 
   try {
     const startIndex = parseInt(data.startIndex) || 0;

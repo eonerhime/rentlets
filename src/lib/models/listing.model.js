@@ -14,6 +14,10 @@ const listingSchema = new mongoose.Schema(
       type: String,
       required: true,
     },
+    location: {
+      type: String,
+      required: true,
+    },
     regularPrice: {
       type: String,
       required: true,
@@ -59,6 +63,6 @@ const listingSchema = new mongoose.Schema(
 );
 
 const Listing =
-  mongoose.models.Listings || mongoose.model("Listings", listingSchema);
+  mongoose.models.Listing || mongoose.model("Listing", listingSchema);
 
 export default Listing;

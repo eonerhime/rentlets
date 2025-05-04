@@ -1,5 +1,5 @@
-import Listing from "@/lib/models/listing.model.js";
-import { connect } from "@/lib/mongodb/mongoose.js";
+import Listing from "@/lib/models/listing.model";
+import { connect } from "@/lib/mongodb/mongoose";
 import { currentUser } from "@clerk/nextjs/server";
 
 export const POST = async (req) => {
@@ -8,16 +8,21 @@ export const POST = async (req) => {
   try {
     await connect();
     const data = await req.json();
+
     if (!user || user.publicMetadata.userMongoId !== data.userMongoId) {
       return new Response("Unauthorized", {
         status: 401,
       });
     }
+
+    console.log("DATA DETAILS:", data.location);
+
     const newListing = await Listing.create({
       userRef: user.publicMetadata.userMongoId,
       name: data.name,
       description: data.description,
       address: data.address,
+      location: data.location,
       regularPrice: data.regularPrice,
       discountPrice: data.discountPrice,
       bathrooms: data.bathrooms,
@@ -30,6 +35,8 @@ export const POST = async (req) => {
     });
 
     await newListing.save();
+
+    console.log("NEW LISTING DETAILS:", newListing);
 
     return new Response(JSON.stringify(newListing), {
       status: 200,

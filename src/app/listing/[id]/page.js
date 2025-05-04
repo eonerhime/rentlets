@@ -10,13 +10,10 @@ export default async function Listing({ params }) {
   let listing = null;
 
   const { id } = await params;
-  console.log("PARAMs ID:", id);
-  // console.log("PARAMs:", params.id);
 
   try {
     const result = await fetch(process.env.URL + "/api/listing/get", {
       method: "POST",
-      // body: JSON.stringify({ listingId: params.id }),
       body: JSON.stringify({ listingId: id }),
       cache: "no-store",
     });

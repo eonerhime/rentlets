@@ -7,7 +7,8 @@ import { useRouter, useSearchParams } from "next/navigation";
 export default function SearchClient() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const [sidebardata, setSidebardata] = useState({
+
+  const [sidebarData, setSidebarData] = useState({
     searchTerm: "",
     type: "all",
     parking: false,
@@ -16,10 +17,13 @@ export default function SearchClient() {
     sort: "created_at",
     order: "desc",
   });
+
   const [loading, setLoading] = useState(false);
   const [listings, setListings] = useState([]);
   const [showMore, setShowMore] = useState(false);
+  const [initialParamsLoaded, setInitialParamsLoaded] = useState(false);
 
+  // 1️⃣ Update sidebarData from URL parameters
   useEffect(() => {
     const urlParams = new URLSearchParams(searchParams);
     const searchTermFromUrl = urlParams.get("searchTerm");
@@ -30,25 +34,23 @@ export default function SearchClient() {
     const sortFromUrl = urlParams.get("sort");
     const orderFromUrl = urlParams.get("order");
 
-    if (
-      searchTermFromUrl ||
-      typeFromUrl ||
-      parkingFromUrl ||
-      furnishedFromUrl ||
-      offerFromUrl ||
-      sortFromUrl ||
-      orderFromUrl
-    ) {
-      setSidebardata({
-        searchTerm: searchTermFromUrl || "",
-        type: typeFromUrl || "all",
-        parking: parkingFromUrl === "true" ? true : false,
-        furnished: furnishedFromUrl === "true" ? true : false,
-        offer: offerFromUrl === "true" ? true : false,
-        sort: sortFromUrl || "created_at",
-        order: orderFromUrl || "desc",
-      });
-    }
+    setSidebarData({
+      searchTerm: searchTermFromUrl || "",
+      type: typeFromUrl || "all",
+      parking: parkingFromUrl === "true",
+      furnished: furnishedFromUrl === "true",
+      offer: offerFromUrl === "true",
+      sort: sortFromUrl || "created_at",
+      order: orderFromUrl || "desc",
+    });
+
+    setInitialParamsLoaded(true);
+  }, [searchParams]);
+
+  // 2️⃣ Fetch listings after sidebarData is set
+  useEffect(() => {
+    // Only fetch when initial params are loaded or when sidebarData changes after that
+    if (!initialParamsLoaded) return;
 
     const fetchListings = async () => {
       setLoading(true);
@@ -57,13 +59,13 @@ export default function SearchClient() {
       const res = await fetch("/api/listing/get", {
         method: "POST",
         body: JSON.stringify({
-          searchTerm: sidebardata.searchTerm,
-          type: sidebardata.type,
-          parking: sidebardata.parking,
-          furnished: sidebardata.furnished,
-          offer: sidebardata.offer,
-          sort: sidebardata.sort,
-          order: sidebardata.order,
+          searchTerm: sidebarData.searchTerm,
+          type: sidebarData.type,
+          parking: sidebarData.parking,
+          furnished: sidebarData.furnished,
+          offer: sidebarData.offer,
+          sort: sidebarData.sort,
+          order: sidebarData.order,
         }),
         headers: {
           "Content-Type": "application/json",
@@ -83,70 +85,57 @@ export default function SearchClient() {
     };
 
     fetchListings();
-  }, [searchParams]);
+  }, [sidebarData, initialParamsLoaded]);
 
+  // Handle input/filter change
   const handleChange = (e) => {
-    if (
-      e.target.id === "all" ||
-      e.target.id === "rent" ||
-      e.target.id === "sale"
-    ) {
-      setSidebardata({ ...sidebardata, type: e.target.id });
+    if (["all", "rent", "sale"].includes(e.target.id)) {
+      setSidebarData({ ...sidebarData, type: e.target.id });
     }
 
     if (e.target.id === "searchTerm") {
-      setSidebardata({ ...sidebardata, searchTerm: e.target.value });
+      setSidebarData({ ...sidebarData, searchTerm: e.target.value });
     }
 
-    if (
-      e.target.id === "parking" ||
-      e.target.id === "furnished" ||
-      e.target.id === "offer"
-    ) {
-      setSidebardata({
-        ...sidebardata,
-        [e.target.id]:
-          e.target.checked || e.target.checked === "true" ? true : false,
+    if (["parking", "furnished", "offer"].includes(e.target.id)) {
+      setSidebarData({
+        ...sidebarData,
+        [e.target.id]: e.target.checked,
       });
     }
 
     if (e.target.id === "sort_order") {
-      const sort = e.target.value.split("_")[0] || "created_at";
-      const order = e.target.value.split("_")[1] || "desc";
-      setSidebardata({ ...sidebardata, sort, order });
+      const [sort, order] = e.target.value.split("_");
+      setSidebarData({ ...sidebarData, sort, order });
     }
   };
 
+  // Handle form submission (search)
   const handleSubmit = (e) => {
     e.preventDefault();
     const urlParams = new URLSearchParams();
+    urlParams.set("searchTerm", sidebarData.searchTerm);
+    urlParams.set("type", sidebarData.type);
+    urlParams.set("parking", sidebarData.parking);
+    urlParams.set("furnished", sidebarData.furnished);
+    urlParams.set("offer", sidebarData.offer);
+    urlParams.set("sort", sidebarData.sort);
+    urlParams.set("order", sidebarData.order);
 
-    urlParams.set("searchTerm", sidebardata.searchTerm);
-    urlParams.set("type", sidebardata.type);
-    urlParams.set("parking", sidebardata.parking);
-    urlParams.set("furnished", sidebardata.furnished);
-    urlParams.set("offer", sidebardata.offer);
-    urlParams.set("sort", sidebardata.sort);
-    urlParams.set("order", sidebardata.order);
-
-    const searchQuery = urlParams.toString();
-    router.push(`/search?${searchQuery}`);
+    router.push(`/search?${urlParams.toString()}`);
   };
 
+  // Show more functionality
   const onShowMoreClick = async () => {
-    const numberOfListings = listings.length;
-    const startIndex = numberOfListings;
-    const urlParams = new URLSearchParams(searchParams.toString());
-
+    const startIndex = listings.length;
+    const urlParams = new URLSearchParams(location.search);
     urlParams.set("startIndex", startIndex);
-    const searchQuery = urlParams.toString();
-    const res = await fetch(`/api/listing/get?${searchQuery}`);
+
+    const res = await fetch(`/api/listing/get?${urlParams.toString()}`);
 
     const data = await res.json();
 
-    if (data.length < 9) {
-      setShowMore(false);
-    }
+    if (data.length < 9) setShowMore(false);
     setListings([...listings, ...data]);
   };
 
@@ -163,12 +152,12 @@ export default function SearchClient() {
               id="searchTerm"
               placeholder="Search..."
               className="border rounded-lg p-3 w-full"
-              value={sidebardata.searchTerm}
+              value={sidebarData.searchTerm}
               onChange={handleChange}
             />
           </div>
 
-          <div className="flex gap-2 flex-wrap items-center">
+          <div className="flex gap-2 flex-wrap">
             <label className="font-semibold">Type:</label>
             <div className="flex gap-2">
               <input
@@ -176,7 +165,7 @@ export default function SearchClient() {
                 id="all"
                 className="w-5"
                 onChange={handleChange}
-                checked={sidebardata.type === "all"}
+                checked={sidebarData.type === "all"}
               />
               <span>Rent & Sale</span>
             </div>
@@ -186,18 +175,17 @@ export default function SearchClient() {
                 id="rent"
                 className="w-5"
                 onChange={handleChange}
-                checked={sidebardata.type === "rent"}
+                checked={sidebarData.type === "rent"}
               />
               <span>Rent</span>
             </div>
-
             <div className="flex gap-2">
               <input
                 type="checkbox"
                 id="sale"
                 className="w-5"
                 onChange={handleChange}
-                checked={sidebardata.type === "sale"}
+                checked={sidebarData.type === "sale"}
               />
               <span>Sale</span>
             </div>
@@ -207,13 +195,13 @@ export default function SearchClient() {
                 id="offer"
                 className="w-5"
                 onChange={handleChange}
-                checked={sidebardata.offer}
+                checked={sidebarData.offer}
               />
               <span>Offer</span>
             </div>
           </div>
 
-          <div className="flex gap-2 flex-wrap items-center">
+          <div className="flex gap-2 flex-wrap">
             <label className="font-semibold">Amenities:</label>
             <div className="flex gap-2">
               <input
@@ -221,7 +209,7 @@ export default function SearchClient() {
                 id="parking"
                 className="w-5"
                 onChange={handleChange}
-                checked={sidebardata.parking}
+                checked={sidebarData.parking}
               />
               <span>Parking</span>
             </div>
@@ -231,7 +219,7 @@ export default function SearchClient() {
                 id="furnished"
                 className="w-5"
                 onChange={handleChange}
-                checked={sidebardata.furnished}
+                checked={sidebarData.furnished}
               />
               <span>Furnished</span>
             </div>
@@ -251,11 +239,13 @@ export default function SearchClient() {
               <option value="createdAt_asc">Oldest</option>
             </select>
           </div>
+
           <button className="bg-slate-700 text-white p-3 rounded-lg uppercase hover:opacity-95">
             Search
           </button>
         </form>
       </div>
+
       <div className="flex-1">
         <h1 className="text-3xl font-semibold border-b p-3 text-slate-700 mt-5">
           Listing results:
@@ -264,7 +254,6 @@ export default function SearchClient() {
           {!loading && listings.length === 0 && (
             <p className="text-xl text-slate-700">No listing found!</p>
           )}
-
           {loading && (
             <p className="text-xl text-slate-700 text-center w-full">
               Loading...
@@ -276,6 +265,7 @@ export default function SearchClient() {
             listings.map((listing) => (
               <ListingItem key={listing._id} listing={listing} />
             ))}
+
           {showMore && (
             <button
               onClick={onShowMoreClick}

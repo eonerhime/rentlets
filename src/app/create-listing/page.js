@@ -24,6 +24,7 @@ export default function CreateListing() {
     name: "",
     description: "",
     address: "",
+    location: "",
     type: "rent",
     bedrooms: 1,
     bathrooms: 1,
@@ -129,8 +130,6 @@ export default function CreateListing() {
     }
   };
 
-  console.log(formData);
-
   const handleSubmit = async (e) => {
     e.preventDefault();
 
@@ -217,6 +216,17 @@ export default function CreateListing() {
             onChange={handleChange}
             value={formData.address}
           />
+          <input
+            type="text"
+            placeholder="Location: Area/ State"
+            className="border p-3 rounded-lg"
+            id="location"
+            required
+            onChange={handleChange}
+            value={formData.location}
+          />
+
+          {/* Sell, Rent, Parking Lot, Furnished, Offer */}
           <div className="flex gap-6 flex-wrap">
             <div className="flex gap-2">
               <input
@@ -269,6 +279,8 @@ export default function CreateListing() {
               <span>Offer</span>
             </div>
           </div>
+
+          {/* Beds and Baths */}
           <div className="flex flex-wrap gap-6">
             <div className="flex items-center gap-2">
               <input
@@ -333,6 +345,8 @@ export default function CreateListing() {
             )}
           </div>
         </div>
+
+        {/* Property Images */}
         <div className="flex flex-col flex-1 gap-4">
           <p className="font-semibold">
             Images:

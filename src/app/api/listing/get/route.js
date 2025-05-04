@@ -5,54 +5,74 @@ export const POST = async (req) => {
   await connect();
   const data = await req.json();
 
-  console.log("DATA:", data.searchTerm);
-
   try {
-    const startIndex = parseInt(data.startIndex) || 0;
-    const limit = parseInt(data.limit) || 9;
-    const sortDirection = data.order === "asc" ? 1 : -1;
-
-    let offer = data.offer;
-    if (offer === undefined || offer === "false") {
-      offer = { $in: [false, true] };
-    }
-
-    let furnished = data.furnished;
-    if (furnished === undefined || furnished === "false") {
-      furnished = { $in: [false, true] };
-    }
-
-    let parking = data.parking;
-    if (parking === undefined || parking === "false") {
-      parking = { $in: [false, true] };
-    }
-
-    let type = data.type;
-    if (type === undefined || type === "all") {
-      type = { $in: ["sale", "rent"] };
-    }
-
-    const listings = await Listing.find({
-      ...(data.userId && { userId: data.userId }),
-      ...(data.listingId && { _id: data.listingId }),
-      ...(data.searchTerm && {
-        $or: [
-          { name: { $regex: data.searchTerm, $options: "i" } },
-          { description: { $regex: data.searchTerm, $options: "i" } },
-        ],
-      }),
-      offer,
-      furnished,
-      parking,
+    const {
+      userId,
+      listingId,
+      searchTerm,
       type,
-    })
-      .sort({ updatedAt: sortDirection })
-      .skip(startIndex)
-      .limit(limit);
+      parking,
+      furnished,
+      offer,
+      sort = "createdAt",
+      order = "desc",
+      startIndex = 0,
+      limit = 9,
+    } = data;
+
+    // Construct query filters dynamically
+    const filters = {};
+
+    if (userId) filters.userId = userId;
+    if (listingId) filters._id = listingId;
+
+    if (searchTerm) {
+      filters.$or = [
+        { name: { $regex: searchTerm, $options: "i" } },
+        { description: { $regex: searchTerm, $options: "i" } },
+        { location: { $regex: searchTerm, $options: "i" } },
+      ];
+    }
+
+    // Handle booleans and default cases
+    if (type && type !== "all") {
+      filters.type = type;
+    } else {
+      filters.type = { $in: ["sale", "rent"] };
+    }
+
+    if (parking === true) {
+      filters.parking = true;
+    }
+
+    if (furnished === true) {
+      filters.furnished = true;
+    }
+
+    if (offer === true) {
+      filters.offer = true;
+    }
+
+    const sortDirection = order === "asc" ? 1 : -1;
+
+    const listings = await Listing.find(filters)
+      .sort({ [sort]: sortDirection })
+      .skip(parseInt(startIndex))
+      .limit(parseInt(limit));
+
     return new Response(JSON.stringify(listings), {
       status: 200,
     });
   } catch (error) {
-    console.log("Error getting posts:", error);
+    console.error("Error getting listings:", error);
+    return new Response(
+      JSON.stringify({
+        error: "Failed to fetch listings.",
+        details: error.message,
+      }),
+      {
+        status: 500,
+      }
+    );
   }
 };

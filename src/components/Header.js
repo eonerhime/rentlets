@@ -29,6 +29,7 @@ export default function Header() {
     urlParams.set("searchTerm", searchTerm);
     const searchQuery = urlParams.toString();
 
+    setSearchTerm("");
     router.push(`/search?${searchQuery}`);
   };
 
@@ -37,8 +38,8 @@ export default function Header() {
       <div className="flex justify-between items-center max-w-6xl mx-auto p-3">
         <Link href="/">
           <h1 className="font-bold text-sm sm:text-xl flex flex-wrap">
-            <span className="text-slate-500">Sahand</span>
-            <span className="text-slate-700">Estate</span>
+            <span className="text-slate-500">Short.</span>
+            <span className="text-slate-700">Let</span>
           </h1>
         </Link>
         <form

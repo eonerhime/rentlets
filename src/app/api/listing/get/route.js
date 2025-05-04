@@ -1,5 +1,5 @@
-import Listing from "@/lib/models/listing.model.js";
-import { connect } from "@/lib/mongodb/mongoose.js";
+import Listing from "@/lib/models/listing.model";
+import { connect } from "@/lib/mongodb/mongoose";
 
 export const POST = async (req) => {
   await connect();

@@ -1,4 +1,4 @@
-import Listing from "@/lib/models/listing-model";
+import Listing from "@/lib/models/listing.model";
 import { connect } from "@/lib/mongodb/mongoose";
 import { currentUser } from "@clerk/nextjs/server";
 

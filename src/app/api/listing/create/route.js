@@ -15,8 +15,6 @@ export const POST = async (req) => {
       });
     }
 
-    console.log("DATA DETAILS:", data.location);
-
     const newListing = await Listing.create({
       userRef: user.publicMetadata.userMongoId,
       name: data.name,
@@ -36,13 +34,10 @@ export const POST = async (req) => {
 
     await newListing.save();
 
-    console.log("NEW LISTING DETAILS:", newListing);
-
     return new Response(JSON.stringify(newListing), {
       status: 200,
     });
   } catch (error) {
-    console.log("Error creating post:", error);
     return new Response("Error creating post", {
       status: 500,
     });

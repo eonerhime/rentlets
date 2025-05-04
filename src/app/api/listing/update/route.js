@@ -41,7 +41,6 @@ export const POST = async (req) => {
       status: 200,
     });
   } catch (error) {
-    console.log("Error creating listing:", error);
     return new Response("Error creating listing", {
       status: 500,
     });

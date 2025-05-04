@@ -65,8 +65,8 @@ export default async function Home() {
           place with ease
         </h1>
         <div className="text-gray-400 text-xs sm:text-sm">
-          Shortlet Apartments is the best place to find your next perfect place
-          to live.
+          Rentlets is the best place to find that perfect place to chill when
+          visiting.
           <br />
           We have a wide range of properties for you to choose from.
         </div>
